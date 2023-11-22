@@ -24,7 +24,7 @@ defmodule Discoverer do
 
   def impl_check(ip, cb_fn) do
     try do
-      result = HTTPoison.get("http://#{ip}/settings", [], hackney: [pool: :ping_pool, connect_timeout: 4000, recv_timeout: 5000])
+      result = HTTPoison.get("http://#{ip}/settings", [], hackney: [pool: :ping_pool, connect_timeout: 6000, recv_timeout: 8000])
       case result do
         {:ok, %HTTPoison.Response{status_code: 200, body: body}} ->
           case Jason.decode(body) do
