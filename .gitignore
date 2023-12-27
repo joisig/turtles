@@ -24,3 +24,6 @@ turtles-*.tar
 
 # Temporary files, for example, from tests.
 /tmp/
+
+# Secret configuration files, not for checking in to Git
+/config/*.secret.exs

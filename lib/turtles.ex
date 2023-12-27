@@ -11,10 +11,10 @@ defmodule Turtles do
 
   @impl true
   def start(_type, _args) do
-    :ok = :hackney_pool.start_pool(:ping_pool, [timeout: 2000, max_connections: 400])
+    #:ok = :hackney_pool.start_pool(:ping_pool, [timeout: 2000, max_connections: 400])
 
     children = [
-      Discoverer
+    #  Discoverer
     ]
 
     opts = [strategy: :one_for_one, name: C.Supervisor]
