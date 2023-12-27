@@ -1,23 +1,59 @@
+# This file is responsible for configuring your application
+# and its dependencies with the aid of the Config module.
+#
+# This configuration file is loaded before any dependency and
+# is restricted to this project.
+
+# General application configuration
 import Config
 
-import_config "config.secret.exs"
+config :turtles,
+  ecto_repos: [Turtles.Repo],
+  generators: [timestamp_type: :utc_datetime]
 
-# Above file should contain structure something like:
-#config :turtles,
-#  ip_base: "192.168.1.",
-#  lights: [
-#    %{type: "shelly", ip: "192.168.1.100", name: "1"},
-#    %{type: "shelly", ip: "192.168.1.101", name: "2"},
-#    %{type: "shelly", ip: "192.168.1.102", name: "3"},
-#    %{type: "shelly", ip: "192.168.1.103", name: "4"},
-#    %{type: "hue", bridge: "hue1", name: "light5"}
-#  ],
-#  bridges: [
-#    %{type: "hue", ip: "192.168.1.104", name: "hue1", username: "username you got from /api on bridge"}
-#  ]
+# Configures the endpoint
+config :turtles, TurtlesWeb.Endpoint,
+  url: [host: "localhost"],
+  adapter: Phoenix.Endpoint.Cowboy2Adapter,
+  render_errors: [
+    formats: [html: TurtlesWeb.ErrorHTML, json: TurtlesWeb.ErrorJSON],
+    layout: false
+  ],
+  pubsub_server: Turtles.PubSub,
+  live_view: [signing_salt: "AZ4oqRvZ"]
 
+# Configure esbuild (the version is required)
+config :esbuild,
+  version: "0.17.11",
+  default: [
+    args:
+      ~w(js/app.js --bundle --target=es2017 --outdir=../priv/static/assets --external:/fonts/* --external:/images/*),
+    cd: Path.expand("../assets", __DIR__),
+    env: %{"NODE_PATH" => Path.expand("../deps", __DIR__)}
+  ]
 
-# For Hue auth and API, see:
-# https://developers.meethue.com/develop/get-started-2/
-# https://www.burgestrand.se/hue-api/api/auth/registration/
-# https://www.burgestrand.se/hue-api/
+# Configure tailwind (the version is required)
+config :tailwind,
+  version: "3.3.2",
+  default: [
+    args: ~w(
+      --config=tailwind.config.js
+      --input=css/app.css
+      --output=../priv/static/assets/app.css
+    ),
+    cd: Path.expand("../assets", __DIR__)
+  ]
+
+# Configures Elixir's Logger
+config :logger, :console,
+  format: "$time $metadata[$level] $message\n",
+  metadata: [:request_id]
+
+# Use Jason for JSON parsing in Phoenix
+config :phoenix, :json_library, Jason
+
+import_config "tconfig.secret.exs"
+
+# Import environment specific config. This must remain at the bottom
+# of this file so it overrides the configuration defined above.
+import_config "#{config_env()}.exs"

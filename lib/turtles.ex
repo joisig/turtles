@@ -1,27 +1,9 @@
 defmodule Turtles do
   @moduledoc """
-  Shelly dimmers can be turned on/off and brightness changed, quite easily.
+  Turtles keeps the contexts that define your domain
+  and business logic.
 
-  ➜  turtles curl http://192.168.1.146/light/0\?turn\=on
-  ➜  turtles curl http://192.168.1.146/light/0\?turn\=off
-  ➜  turtles curl http://192.168.1.146/light/0\?turn\=on\&brightness\=70
+  Contexts are also responsible for managing your data, regardless
+  if it comes from the database, an external API or others.
   """
-
-  use Application
-
-  @impl true
-  def start(_type, _args) do
-    #:ok = :hackney_pool.start_pool(:ping_pool, [timeout: 2000, max_connections: 400])
-
-    children = [
-    #  Discoverer
-    ]
-
-    opts = [strategy: :one_for_one, name: C.Supervisor]
-    Supervisor.start_link(children, opts)
-  end
-
-  def foo() do
-    Application.fetch_env(:turtles, :foo)
-  end
 end
