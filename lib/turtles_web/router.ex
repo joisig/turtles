@@ -20,6 +20,12 @@ defmodule TurtlesWeb.Router do
     get "/", PageController, :home
   end
 
+  scope "/oapi", TurtlesWeb do
+    pipe_through :api
+
+    post "/set_light_state", PageController, :set_light_state
+  end
+
   # Other scopes may use custom stacks.
   # scope "/api", TurtlesWeb do
   #   pipe_through :api
