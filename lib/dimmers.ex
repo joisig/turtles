@@ -4,14 +4,11 @@ defmodule Dimmers do
     val
   end
 
-  # TODO don't make this call every single time...
   def get_bridge_with_ip(bridge_id) do
     bridge = Application.get_env(:turtles, :bridges)[bridge_id]
 
-    #[%{"internalipaddress" => ip}] = HTTPoison.get!("https://discovery.meethue.com/").body |> IO.inspect
-    #|> Jason.decode!()
-    #|> Enum.filter(fn %{"id" => id} -> id == bridge.unique_id end)
-    ip = "192.168.1.161"
+    # TODO make this faster :)
+    ip = HueDiscovery.discover
 
     Map.put(bridge, :ip, ip)
   end

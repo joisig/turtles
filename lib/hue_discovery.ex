@@ -23,12 +23,12 @@ defmodule HueDiscovery do
   defp receive_messages(socket, timeout) do
     receive do
       {:udp, ^socket, hue_ip, _port, message} ->
-        :gen_udp.close(socket)
-        IO.inspect message
-        if String.contains?(message, "description.xml") do
-          {:ok, new(hue_ip)}
-        else
-          receive_messages(socket, timeout)
+        case parse_info(message) do
+          {:ok, ip_string, true} ->
+            :gen_udp.close(socket)
+            ip_string
+          _ ->
+            receive_messages(socket, timeout)
         end
     after
       timeout ->
@@ -37,7 +37,30 @@ defmodule HueDiscovery do
     end
   end
 
-  defp new(hue_ip) do
-    IO.inspect hue_ip
+  def parse_info(input) do
+    # Split the string input by newline to handle the lines separately
+    lines = String.split(input, "\n")
+
+    # Use pattern matching and comprehensions to find LOCATION and SERVER lines
+    location_line = Enum.find(lines, &String.starts_with?(&1, "LOCATION:"))
+    server_line = Enum.find(lines, &String.starts_with?(&1, "SERVER:"))
+
+    case {location_line, server_line} do
+      # If LOCATION line is present, parse the IP address
+      {location, _} when not is_nil(location) ->
+        # Use a Regular Expression to find the IP address in the location line
+        regex = ~r/http:\/\/(?<ip_address>[0-9\.]+)/
+        [match] = Regex.run(regex, location, capture: :all_but_first)
+
+        # Check if the SERVER line contains "Hue/"
+        hue_present = server_line |> String.contains?("Hue/")
+
+        # Return both the IP address and the boolean indicating the presence of "Hue/"
+        {:ok, match, hue_present}
+
+      # If LOCATION line isn't present, or we don't find an IP, return an error tuple
+      _ ->
+        {:error, "Required information not found"}
+    end
   end
 end

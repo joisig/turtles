@@ -881,10 +881,6 @@ select {
   z-index: 50;
 }
 
-.float-right {
-  float: right;
-}
-
 .float-left {
   float: left;
 }
@@ -919,6 +915,10 @@ select {
   margin-right: 0.5rem;
 }
 
+.mr-3 {
+  margin-right: 0.75rem;
+}
+
 .mt-0 {
   margin-top: 0px;
 }
@@ -951,14 +951,6 @@ select {
   margin-top: 0.75rem;
 }
 
-.mr-1 {
-  margin-right: 0.25rem;
-}
-
-.mr-3 {
-  margin-right: 0.75rem;
-}
-
 .block {
   display: block;
 }
@@ -983,10 +975,6 @@ select {
   display: none;
 }
 
-.h-10 {
-  height: 2.5rem;
-}
-
 .h-3 {
   height: 0.75rem;
 }
@@ -997,10 +985,6 @@ select {
 
 .h-5 {
   height: 1.25rem;
-}
-
-.h-12 {
-  height: 3rem;
 }
 
 .h-9 {
@@ -1017,10 +1001,6 @@ select {
 
 .w-1\/4 {
   width: 25%;
-}
-
-.w-10 {
-  width: 2.5rem;
 }
 
 .w-10\/12 {
@@ -1047,6 +1027,10 @@ select {
   width: 20rem;
 }
 
+.w-9 {
+  width: 2.25rem;
+}
+
 .w-\[40rem\] {
   width: 40rem;
 }
@@ -1061,14 +1045,6 @@ select {
 
 .w-screen {
   width: 100vw;
-}
-
-.w-12 {
-  width: 3rem;
-}
-
-.w-9 {
-  width: 2.25rem;
 }
 
 .max-w-2xl {
@@ -1105,10 +1081,6 @@ select {
 
 .animate-spin {
   animation: spin 1s linear infinite;
-}
-
-.resize {
-  resize: both;
 }
 
 .items-center {
