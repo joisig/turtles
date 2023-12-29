@@ -1,0 +1,124 @@
+<%= for {dimmer, index} <- Enum.with_index(@dimmers) do %>
+<div {[class: "w-screen p-3 " <> if rem(index, 2) == 0 do
+  "bg-slate-50"
+else
+  "bg-slate-200"
+end]}>
+  <div {[id: "bulbarea#{index}"]} class="w-auto float-left mt-2 mr-3">
+    <span {[id: "bulb#{index}", class: "hero-light-bulb-solid w-9 h-9 " <> (if dimmer.is_on, do: "text-green-600", else: "text-red-600")]}>
+    </span>
+  </div>
+  <div class="w-full">
+    <div class="w-full"><%= dimmer.name %></div>
+  </div>
+  <div class="w-full">
+    <div class="w-10/12 inline-block">
+      <tc-range-slider {[
+        "mousewheel-disabled": true,
+        min: 0,
+        max: 100,
+        round: 1,
+        id: "slider#{index}",
+        value: dimmer.brightness
+      ]}></tc-range-slider>
+    </div>
+  </div>
+</div>
+<% end %>
+
+<script src="/js/toolcool-range-slider.min.js"></script>
+
+<script>
+function sendToServer(dimmerName, isOn, brightness) {
+  let lightState = {
+    dimmer_name: dimmerName,
+    is_on: isOn,
+    brightness: brightness
+  };
+  var xhr = new XMLHttpRequest();
+  xhr.onreadystatechange = function() {
+    if (xhr.readyState === XMLHttpRequest.DONE) {
+      if (xhr.status === 200) {
+        // Nothing to do
+      } else {
+        alert(`Something went wrong: ${xhr.status}, ${xhr.responseText}`);
+      }
+    }
+  };
+  xhr.open('POST', '/oapi/set_light_state', true);
+  xhr.setRequestHeader('Content-Type', 'application/json;charset=UTF-8');
+  xhr.onerror = function() {
+    alert('Network error');
+  };
+  xhr.send(JSON.stringify(lightState));
+}
+
+function throttle(fn, threshhold, scope) {
+  var last;
+  var deferTimer;
+  return function () {
+    var now = +new Date;
+    var args = arguments;
+    if (last && now < last + threshhold) {
+      clearTimeout(deferTimer);
+      deferTimer = setTimeout(function () {
+        last = now;
+        fn.apply(scope, args);
+      }, threshhold);
+    } else {
+      clearTimeout(deferTimer);
+      last = now;
+      fn.apply(scope, args);
+    }
+  };
+}
+
+function getSliderValue(index) {
+  return Math.round(document.getElementById('slider' + index).value);
+}
+
+function isBulbOn(index) {
+  return document.getElementById('bulb' + index).classList.contains("text-green-600");
+}
+
+function markBulbOn(index, isOn) {
+  let element = document.getElementById('bulb' + index);
+  element.classList.remove('text-green-600');
+  element.classList.remove('text-red-600');
+
+  let newClass = 'text-red-600';
+  if (isOn) {
+    newClass = 'text-green-600';
+  }
+  element.classList.add(newClass);
+}
+
+function handleSliderChange(index, dimmerName) {
+  let brightness = getSliderValue(index);
+  let isOn = isBulbOn(index);
+  console.log("Handle slider change: " + index + ", " + dimmerName + ", " + isOn + ", " + brightness);
+
+  sendToServer(dimmerName, isOn, brightness);
+}
+
+function handleBulbClick(index, dimmerName) {
+  console.log("Bulb click " + index + ", " + dimmerName);
+  let brightness = getSliderValue(index);
+  let newIsOn = !isBulbOn(index);
+  markBulbOn(index, newIsOn);
+  sendToServer(dimmerName, newIsOn, brightness);
+}
+
+<%= for {dimmer, index} <- Enum.with_index(@dimmers) do %>
+<% slider_name = "slider#{index}" %>
+const <%= slider_name %> = document.getElementById('<%= slider_name %>');
+<%= slider_name %>.addEventListener('change', throttle((evt) => {
+  handleSliderChange(<%= index %>, "<%= dimmer.name %>");
+}, 350, this));
+<% bulb_name = "bulbarea#{index}" %>
+const <%= bulb_name %> = document.getElementById('<%= bulb_name %>');
+<%= bulb_name %>.addEventListener("click", (evt) => {
+  handleBulbClick(<%= index %>, "<%= dimmer.name %>");
+});
+<% end %>
+</script>

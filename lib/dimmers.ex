@@ -4,28 +4,45 @@ defmodule Dimmers do
     val
   end
 
-  def on(device, brightness \\ 100)
-  def on(device, brightness) when is_binary(device), do: on(by_name(device), brightness)
-  def on(%{type: :shelly} = device, brightness) do
-    params = URI.encode_query([{"turn", "on"}, {"brightness", brightness}])
+  def get_bridge_with_ip(bridge_id) do
+    bridge = Application.get_env(:turtles, :bridges)[bridge_id]
+
+    # TODO make this faster :)
+    ip = HueDiscovery.discover
+
+    Map.put(bridge, :ip, ip)
+  end
+
+  def all_states() do
+    Application.get_env(:turtles, :dimmers)
+    |> Enum.map(fn {name, dimmer} ->
+      Task.async(fn -> {name, state(dimmer)} end)
+    end)
+    |> Enum.map(fn task ->
+      Task.await(task)
+    end)
+  end
+
+  def set_state(device, is_on, brightness \\ nil)
+  def set_state(device, is_on, brightness) when is_binary(device), do: set_state(by_name(device), is_on, brightness)
+  def set_state(%{type: :shelly} = device, is_on, brightness) do
+    brightness_params = case brightness do nil -> []; _ -> [{"brightness", brightness}] end
+    params = URI.encode_query([{"turn", case is_on do true -> "on"; _ -> "off" end}] ++ brightness_params)
     HTTPoison.get!("http://" <> device.ip <> "/light/0?" <> params)
   end
-  def on(%{type: :hue} = device, brightness) do
-    params = Jason.encode!(%{"on" => true, "bri" => round(254 * brightness / 100)})
+  def set_state(%{type: :hue} = device, is_on, brightness) do
+    brightness_params = case brightness do
+      nil -> %{}
+      _ -> %{"bri" => round(254 * brightness / 100)}
+    end
+    params = Jason.encode!(Map.merge(%{"on" => is_on}, brightness_params))
     url = get_hue_light_url(device) <> "/state"
     HTTPoison.put!(url, params)
   end
 
-  def off(device) when is_binary(device), do: off(by_name(device))
-  def off(%{type: :shelly} = device) do
-    params = URI.encode_query([{"turn", "off"}])
-    HTTPoison.get!("http://" <> device.ip <> "/light/0?" <> params)
-  end
-  def off(%{type: :hue} = device) do
-    params = Jason.encode!(%{"on" => false})
-    url = get_hue_light_url(device) <> "/state"
-    HTTPoison.put!(url, params)
-  end
+  def on(device, brightness \\ nil), do: set_state(device, true, brightness)
+
+  def off(device, brightness \\ nil), do: set_state(device, false, brightness)
 
   def state(device) when is_binary(device), do: state(by_name(device))
   def state(%{type: :shelly} = device) do
@@ -35,7 +52,7 @@ defmodule Dimmers do
     {is_on, brightness}
   end
   def state(%{type: :hue, bridge: bridge_id, unique_id: unique_id}) do
-    bridge = Application.get_env(:turtles, :bridges)[bridge_id]
+    bridge = get_bridge_with_ip(bridge_id)
     [%{"on" => is_on, "bri" => brightness_out_of_254}] = get_bridge_lights(bridge)
     |> Enum.flat_map(fn {_, val} ->
       case val do
@@ -52,7 +69,7 @@ defmodule Dimmers do
   end
 
   def get_hue_light_url(%{type: :hue, bridge: bridge_id, unique_id: unique_id}) do
-    bridge = Application.get_env(:turtles, :bridges)[bridge_id]
+    bridge = get_bridge_with_ip(bridge_id)
     lights = get_bridge_lights(bridge)
 
     [light_api_key] = Enum.flat_map(lights, fn {api_key, val} ->
