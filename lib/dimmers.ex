@@ -7,8 +7,9 @@ defmodule Dimmers do
   def get_bridge_with_ip(bridge_id) do
     bridge = Application.get_env(:turtles, :bridges)[bridge_id]
 
-    # TODO make this faster :)
-    ip = HueDiscovery.discover
+    # TODO: Make this find the correct bridge based on bridge_id - right now
+    # it finds the first bridge to respond, if you have multiple.
+    ip = HueDiscovery.discover()
 
     Map.put(bridge, :ip, ip)
   end
