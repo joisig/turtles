@@ -7,6 +7,8 @@ defmodule Turtles.Application do
 
   @impl true
   def start(_type, _args) do
+    HueDiscovery.onetime_init()
+
     children = [
       TurtlesWeb.Telemetry,
       Turtles.Repo,

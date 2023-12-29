@@ -1,5 +1,57 @@
 defmodule HueDiscovery do
-  def discover(timeout \\ 5_000) do
+
+  require Logger
+
+  @cache :"HueDiscovery.Cache"
+
+  def onetime_init() do
+    :ets.new(@cache, [:named_table, :public, :set, {:keypos, 1}])
+  end
+
+  def get_cached_value(key) do
+    case :ets.lookup(@cache, key) do
+      [] ->
+        nil
+      [{^key, val}] ->
+        val
+    end
+  end
+
+  def put_cached_value(key, val) do
+    true = :ets.insert(@cache, {key, val})
+    val
+  end
+
+  def discover() do
+    # This returns the last cached value if available, otherwise
+    # does discovery before returning.
+    #
+    # The idea is to return a value very quickly but do discovery
+    # in the background so that if we get an error talking to the
+    # gateway because discovery was out of date, then hopefully the
+    # very next request will work.
+    case get_cached_value(:ip_string) do
+      nil ->
+        put_cached_value(:ip_string, discover_impl())
+      val ->
+        Task.start(fn -> put_cached_value(:ip_string, discover_impl(val)) end)
+        val
+    end
+  end
+
+  def discover_impl(first_check_url \\ nil, timeout \\ 5_000)
+  def discover_impl(nil, timeout) do
+    # There seems to be a rate limit implemented by the Hue bridge
+    # on the SSDP discovery; it will start to fail if you do it
+    # 10 times or so within a span of a few seconds, at which point
+    # you need to wait for a while.
+    #
+    # For that reason, if we have a cached IP address, we'll check
+    # if we can retrieve the discovery XML file at the old IP
+    # (see the non-nil case below this function body) before actually
+    # doing discovery via SSDP.
+    Logger.info("Initiating SSDP discovery.")
+
     {:ok, socket} = :gen_udp.open(0, [:binary, active: true, reuseaddr: true])
 
     payload = [
@@ -19,10 +71,25 @@ defmodule HueDiscovery do
     # Here we start the loop to receive messages within a receive block
     receive_messages(socket, timeout)
   end
+  def discover_impl(first_check_ip, timeout) when is_binary(first_check_ip) do
+    case HTTPoison.get("http://#{first_check_ip}/description.xml", [], timeout: timeout, recv_timeout: timeout) do
+      {:ok, %HTTPoison.Response{status_code: 200, body: body}} ->
+        if String.contains?(body, "<modelName>Philips hue bridge") do
+          first_check_ip
+        else
+          Logger.info "Found description.xml at #{first_check_ip} but does not look like a Philips Hue bridge. #{inspect body}"
+          discover_impl(nil, timeout)
+        end
+      _ ->
+        # Couldn't retrieve the description document, IP address must be wrong.
+        Logger.info "No description.xml found at last-known bridge IP #{first_check_ip}, doing SSDP discovery."
+        discover_impl(nil, timeout)
+    end
+  end
 
   defp receive_messages(socket, timeout) do
     receive do
-      {:udp, ^socket, hue_ip, _port, message} ->
+      {:udp, ^socket, _hue_ip, _port, message} ->
         case parse_info(message) do
           {:ok, ip_string, true} ->
             :gen_udp.close(socket)

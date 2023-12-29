@@ -96,7 +96,7 @@ function markBulbOn(index, isOn) {
 function handleSliderChange(index, dimmerName) {
   let brightness = getSliderValue(index);
   let isOn = isBulbOn(index);
-  console.log("Handle slider change: " + index + ", " + dimmerName + ", " + isOn);
+  console.log("Handle slider change: " + index + ", " + dimmerName + ", " + isOn + ", " + brightness);
 
   sendToServer(dimmerName, isOn, brightness);
 }
