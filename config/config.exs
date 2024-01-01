@@ -52,7 +52,39 @@ config :logger, :console,
 # Use Jason for JSON parsing in Phoenix
 config :phoenix, :json_library, Jason
 
+# This imports the secret configuration for your lighs and bridge; see
+# example of contents of this file right below.
 import_config "tconfig.secret.exs"
+
+# # Example tconfig.secret.exs contents:
+#
+# config :turtles,
+#   zones: [
+#     "Foyer",
+#     "Kitchen"
+#   ],
+#   dimmers: [
+#     {"foyerrecessed",
+#       %{name: "Forstofa inngangur", type: :shelly, zone: "Foyer", ip: "192.168.1.90"}},
+#     {"foyerindirectled",
+#       # Hue device unique IDs can be found at
+#       # http://{ip address of bridge}/api/{Hue bridge username}/lights
+#       %{name: "Foyer indirect LEDs", type: :hue, zone: "Foyer", bridge: :hue1, unique_id: "04:11:84:ff:13:43:75:a3-01"}},
+#
+#     {"kitchenbenches",
+#       %{name: "Kitchen worktops", type: :shelly, zone: "Kitchen", ip: "192.168.1.96"}},
+#     {"kitchenisland",
+#       %{name: "Kitchen island", type: :hue, zone: "Kitchen", bridge: :hue1, unique_id: "03:11:84:ff:13:12:75:a1-03"}},
+#   ],
+#   bridges: %{
+#     # For details on getting the username, see
+#     # https://www.burgestrand.se/hue-api/api/auth/registration/
+#     #
+#     # The unique_id can be found at http://{ip address of bridge}/description.xml
+#     # under the <serialNumber> key.
+#     hue1: %{type: :hue, unique_id: "abcdef01234", username: "HUEBRIDGEUSERNAME"}
+#   }
+
 
 # Import environment specific config. This must remain at the bottom
 # of this file so it overrides the configuration defined above.
