@@ -1,0 +1,17 @@
+<form {[
+  action: "/scene/create",
+  class: "w-screen p-3 flex flex-col odd:bg-slate-50 even:bg-slate-200",
+  method: "post"
+]}>
+<div class="flex flex-row">
+<input type="hidden" name="_csrf_token" {[value: Plug.CSRFProtection.get_csrf_token()]}>
+<input class="basis-4/5" type="text" required placeholder="Scene name" name="scene_name">
+<button type="submit" class="basis-1/5 border-2 border-dashed rounded-lg bg-orange-100 hover:bg-orange-200 active:bg-white border-red-500 text-sm p-1 ml-2">Create</button>
+</div>
+<%= for {dimmer, index} <- Enum.with_index(@dimmers) do %>
+<div class="flex flex-row">
+  <input class="m-2" type="checkbox" checked id={"checkbox#{index}"} name="include_lights[]" value={dimmer.id}>
+  <label class="mt-1" for={"checkbox#{index}"}><%= dimmer.name %></label><br>
+</div>
+<% end %>
+</form>

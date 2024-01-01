@@ -16,8 +16,8 @@ defmodule Dimmers do
 
   def all_states() do
     Application.get_env(:turtles, :dimmers)
-    |> Enum.map(fn {name, dimmer} ->
-      Task.async(fn -> {name, state(dimmer)} end)
+    |> Enum.map(fn {id, dimmer} ->
+      Task.async(fn -> {id, dimmer.name, state(dimmer)} end)
     end)
     |> Enum.map(fn task ->
       Task.await(task)

@@ -1,9 +1,24 @@
+<div class="w-screen pb-3 bg-teal-50 flex flex-row flex-wrap">
+<%= for {index, scene} <- @scenes do %>
+<form class="inline-block pt-3 pl-3 pr-3" method="post" {[action: "/scene/set/#{index}"]}>
+<input type="hidden" name="_csrf_token" {[value: Plug.CSRFProtection.get_csrf_token()]}>
+<button type="submit" class="border-2 border-dashed rounded-lg bg-orange-100 hover:bg-orange-200 active:bg-white border-red-500 p-4"><%= scene["name"] %></button>
+</form>
+<% end %>
+<div class="pt-3 ml-auto">
+<form class="inline-block pt-3" method="get" action="/scene/new">
+<input type="hidden" name="_csrf_token" {[value: Plug.CSRFProtection.get_csrf_token()]}>
+<button type="submit" class="text-slate-600 hover:text-orange-500 active:text-black"><span class="hero-plus-circle-solid h-9 w-9"></span></button>
+</form>
+<form class="inline-block pt-3 pl-2 pr-3" method="get" action="/scene/manage">
+<input type="hidden" name="_csrf_token" {[value: Plug.CSRFProtection.get_csrf_token()]}>
+<button type="submit" class="text-slate-600 hover:text-orange-500 active:text-black"><span class="hero-cog-6-tooth-solid h-9 w-9"></span></button>
+</form>
+</div>
+</div>
+
 <%= for {dimmer, index} <- Enum.with_index(@dimmers) do %>
-<div {[class: "w-screen p-3 " <> if rem(index, 2) == 0 do
-  "bg-slate-50"
-else
-  "bg-slate-200"
-end]}>
+<div {[class: "w-screen p-3 odd:bg-slate-50 even:bg-slate-200"]}>
   <div {[id: "bulbarea#{index}"]} class="w-auto float-left mt-2 mr-3">
     <span {[id: "bulb#{index}", class: "hero-light-bulb-solid w-9 h-9 " <> (if dimmer.is_on, do: "text-green-600", else: "text-red-600")]}>
     </span>
@@ -113,12 +128,12 @@ function handleBulbClick(index, dimmerName) {
 <% slider_name = "slider#{index}" %>
 const <%= slider_name %> = document.getElementById('<%= slider_name %>');
 <%= slider_name %>.addEventListener('change', throttle((evt) => {
-  handleSliderChange(<%= index %>, "<%= dimmer.name %>");
+  handleSliderChange(<%= index %>, "<%= dimmer.id %>");
 }, 350, this));
 <% bulb_name = "bulbarea#{index}" %>
 const <%= bulb_name %> = document.getElementById('<%= bulb_name %>');
 <%= bulb_name %>.addEventListener("click", (evt) => {
-  handleBulbClick(<%= index %>, "<%= dimmer.name %>");
+  handleBulbClick(<%= index %>, "<%= dimmer.id %>");
 });
 <% end %>
 </script>

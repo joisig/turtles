@@ -1,0 +1,11 @@
+<%= for {index, scene} <- @scenes do %>
+<form {[
+  action: "/scene/delete/#{index}",
+  class: "w-screen p-3 flex flex-row odd:bg-slate-50 even:bg-slate-200",
+  method: "post"
+]}>
+<input type="hidden" name="_csrf_token" {[value: Plug.CSRFProtection.get_csrf_token()]}>
+<div class="basis-4/5"><%= scene["name"] %></div>
+<button type="submit" class="border-2 border-dashed rounded-lg bg-orange-100 hover:bg-orange-200 active:bg-white border-red-500 text-sm p-1">Delete</button>
+</form>
+<% end %>

@@ -1,25 +1,15 @@
 defmodule HueDiscovery do
-
   require Logger
 
-  @cache :"HueDiscovery.Cache"
-
-  def onetime_init() do
-    :ets.new(@cache, [:named_table, :public, :set, {:keypos, 1}])
-  end
-
-  def get_cached_value(key) do
-    case :ets.lookup(@cache, key) do
-      [] ->
-        nil
-      [{^key, val}] ->
-        val
+  def get_cached_value() do
+    case Configs.get("hue_ip_string") do
+      %{"value" => value} -> value
+      _ -> nil
     end
   end
 
-  def put_cached_value(key, val) do
-    true = :ets.insert(@cache, {key, val})
-    val
+  def put_cached_value(val) do
+    Configs.set("hue_ip_string", %{"value" => val})
   end
 
   def discover() do
@@ -30,11 +20,11 @@ defmodule HueDiscovery do
     # in the background so that if we get an error talking to the
     # gateway because discovery was out of date, then hopefully the
     # very next request will work.
-    case get_cached_value(:ip_string) do
+    case get_cached_value() do
       nil ->
-        put_cached_value(:ip_string, discover_impl())
+        put_cached_value(discover_impl(nil, 15000))
       val ->
-        Task.start(fn -> put_cached_value(:ip_string, discover_impl(val)) end)
+        Task.start(fn -> put_cached_value(discover_impl(val)) end)
         val
     end
   end

@@ -18,6 +18,12 @@ defmodule TurtlesWeb.Router do
     pipe_through :browser
 
     get "/", PageController, :home
+    post "/scene/set/:scene", PageController, :set_scene
+
+    get "/scene/manage", PageController, :manage_scenes
+    get "/scene/new", PageController, :new_scene
+    post "/scene/create", PageController, :create
+    post "/scene/delete/:scene", PageController, :delete_scene
   end
 
   scope "/oapi", TurtlesWeb do
