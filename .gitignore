@@ -27,3 +27,9 @@ turtles-*.tar
 
 # Secret configuration files, not for checking in to Git
 /config/*.secret.exs
+
+**.DS_Store
+
+*.db
+*.db-shm
+*.db-wal

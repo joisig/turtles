@@ -17,7 +17,7 @@ defmodule TurtlesWeb do
   those modules here.
   """
 
-  def static_paths, do: ~w(assets fonts images js favicon.ico robots.txt)
+  def static_paths, do: ~w(assets fonts images js favicon.ico robots.txt android-chrome-192x192.png android-chrome-512x512.png apple-touch-icon.png favicon-16x16.png favicon-32x32.png site.webmanifest)
 
   def router do
     quote do
