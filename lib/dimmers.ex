@@ -1,3 +1,5 @@
+# Copyright (c) 2024 Jói Sigurdsson. All rights reserved.
+# Licensed under AGPL, see LICENSE
 defmodule Dimmers do
   def by_name(name) do
     {^name, val} = :lists.keyfind(name, 1, Application.get_env(:turtles, :dimmers))

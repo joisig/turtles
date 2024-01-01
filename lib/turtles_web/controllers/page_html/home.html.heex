@@ -1,3 +1,7 @@
+<!--
+Copyright (c) 2024 Jói Sigurdsson. All rights reserved.
+Licensed under AGPL, see LICENSE
+-->
 <div class="w-screen pb-3 bg-teal-50 flex flex-row flex-wrap">
 <%= for {index, scene} <- @scenes do %>
 <form class="inline-block pt-3 pl-3 pr-3" method="post" {[action: "/scene/set/#{index}"]}>

@@ -1,3 +1,5 @@
+# Copyright (c) 2024 Jói Sigurdsson. All rights reserved.
+# Licensed under AGPL, see LICENSE
 defmodule Configs do
   use Ecto.Schema
 
